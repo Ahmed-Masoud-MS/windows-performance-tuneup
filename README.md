@@ -9,15 +9,19 @@ Most "optimizer" tools apply blind registry tweaks and break things. This tool w
 1. Download or clone this repo onto the PC
 2. Double-click **`Report.bat`** → read-only health report + prioritized recommendations
 3. Double-click **`TuneUp.bat`** → same report, then guided fixes (each asks first)
+4. Double-click **`Debloat.bat`** → assess installed apps & startup, then remove bloat **per category, with consent** (protected apps are never touched)
 
 Right-click → **Run as administrator** to unlock the system repair offers
-(`sfc /scannow`, `DISM /RestoreHealth`).
+(`sfc /scannow`, `DISM /RestoreHealth`) and the optional System Restore Point in Debloat.
 
 Prefer a terminal?
 
 ```powershell
 .\scripts\performance-check.ps1          # report only
 .\scripts\performance-check.ps1 -Tune    # report + guided fixes
+
+.\scripts\debloat-assistant.ps1          # assess apps & startup (read-only)
+.\scripts\debloat-assistant.ps1 -Apply   # remove bloat per-category + manage startup, all consented
 ```
 
 ## What the report covers
@@ -42,7 +46,31 @@ It ends with a **numbered, prioritized recommendation list** — hardware truths
 - System file integrity check — `sfc /scannow` (admin)
 - Component-store repair — `DISM /Online /Cleanup-Image /RestoreHealth` (admin)
 
-## What it will NEVER do — the client-machine guarantee
+## Debloat assistant (`Debloat.bat` / `debloat-assistant.ps1`)
+
+The report tool stays strictly hands-off. The **debloat assistant** is the opt-in
+companion for when you *do* want to remove bloat and trim startup — built to be safe
+enough for a work or client machine:
+
+- **Protected allowlist that can never be removed:** email/Outlook, Teams, Office,
+  OneDrive, SharePoint, PowerApps, Power Automate, the Microsoft Store, Terminal,
+  Notepad, Calculator, Photos, Camera, Edge, security & Xbox dependency apps, all
+  codec extensions, common dev tools (VS Code, Python, NVIDIA…), **and every
+  non-Microsoft app by default.**
+- **Asks per category** before removing anything — bloat/discontinued, games,
+  Xbox overlays, OEM (HP/Dell/Lenovo), third-party promo apps.
+- **Startup manager** lists per-user startup entries and lets you disable any one
+  by one — after backing the whole key up to a `.reg` file you can double-click to
+  restore.
+- **Backups & reversibility:** optional System Restore Point (admin), `.reg` backup
+  of startup, and every removed Store app reinstalls from the Microsoft Store.
+
+Assess first (`debloat-assistant.ps1`, read-only), then run `-Apply` only when ready.
+
+## What the report tool will NEVER do — the client-machine guarantee
+
+(The read-only report / `-Tune` tool. The debloat assistant above is the separate,
+clearly-labelled, consent-heavy tool for removals.)
 
 - ❌ Disable startup items or services on its own (it lists them; disabling stays your decision)
 - ❌ Registry "performance tweaks", debloat scripts, third-party optimizer engines

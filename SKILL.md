@@ -12,15 +12,18 @@ description: >-
 
 # Windows performance tune-up (diagnose first, fix with consent)
 
-Run the bundled script:
+Run the bundled scripts:
 
 ```powershell
 scripts\performance-check.ps1          # REPORT - read-only, changes nothing
 scripts\performance-check.ps1 -Tune    # report + offer safe fixes, Y/N each
+
+scripts\debloat-assistant.ps1          # ASSESS apps & startup - read-only
+scripts\debloat-assistant.ps1 -Apply   # remove bloat per-category + trim startup, all consented
 ```
 
-Or double-click `Report.bat` / `TuneUp.bat` (right-click → *Run as
-administrator* to unlock `sfc /scannow` and DISM repair offers).
+Or double-click `Report.bat` / `TuneUp.bat` / `Debloat.bat` (right-click → *Run as
+administrator* to unlock `sfc /scannow`, DISM repair, and the restore-point offer).
 
 ## Hard rules — especially on a client's computer
 
@@ -54,3 +57,32 @@ administrator* to unlock `sfc /scannow` and DISM repair offers).
 7. **Startup list long** → biggest cause of "slow since I got it" — review
    in Task Manager → Startup apps.
 8. **Power saver plan** → CPU is being throttled; Balanced/High performance.
+
+## Debloat assistant — methodology (when removal IS wanted)
+
+The report tool never removes anything. When the user explicitly wants to remove
+bloat or trim startup, use `debloat-assistant.ps1` and follow these rules:
+
+1. **Assess first (read-only), present the categorised list, then ask.** Never
+   remove an app the user has not seen grouped and approved.
+2. **The PROTECTED allowlist is absolute.** Email/Outlook, Teams, Office, OneDrive,
+   SharePoint, PowerApps, Power Automate, Store, Terminal, Notepad, Calculator,
+   Photos, Camera, Edge, security & Xbox *dependency* apps, codec extensions, and
+   all non-Microsoft apps are never offered for removal — even if the user says
+   "remove everything". This is the email/work-data guarantee.
+3. **Ask per category, not all-at-once:** bloat/discontinued, games, Xbox overlays,
+   OEM (HP/Dell/Lenovo), third-party promo apps. The user may keep some categories.
+4. **Xbox nuance:** the gaming front-ends (GamingApp, GamingServices, Xbox*Overlay,
+   GameAssist) are removable; `XboxIdentityProvider`, `Xbox.TCUI` and
+   `XboxGameCallableUI` are protected because Store/Photos and some apps depend on them.
+5. **Startup ≠ uninstall.** Disabling a startup entry only stops auto-launch; the app
+   still opens manually. Always back up the `HKCU\...\Run` key to a `.reg` file before
+   editing, and never disable security/backup/sync/management agents on client machines.
+6. **Distinguish startup locations.** Per-user `Run` keys are safe to edit; entries
+   under `HKU\S-1-5-18` / `.DEFAULT` are system/default-profile and often *orphaned
+   stubs* pointing at uninstalled apps — verify the target exe exists before acting.
+7. **Cache-sweep gotcha:** "new" Teams `LocalCache` and Edge `Service Worker` storage
+   are NOT pure throwaway cache — deleting them while the app/PWA runs can sign the
+   user out. Only clear with the app closed, and prefer leaving them on a healthy disk.
+8. **Reversibility:** offer a System Restore Point (admin) before removals; removed
+   Store apps reinstall from the Microsoft Store; startup restores from the `.reg` backup.
